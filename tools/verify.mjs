@@ -52,12 +52,24 @@ async function run(width, height) {
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight), 'page has no scrollbars');
   await page.screenshot({ path: `shots/${width}-load.png` });
 
+  // The edits run on the ungrouped list; grouped mode is checked below.
+  await page.select('#group', '');
+  await sleep(600);
+
   // Move: drag the first bar two weeks' worth of pixels to the right inside its row.
-  const first = '.lat-sched__bar[data-key="e1"]';
-  const before = await eventRow(page, 'e1');
+  const key = await page.evaluate(() => {
+    const view = document.querySelector('.lat-sched__timeline').getBoundingClientRect();
+    const bar = [...document.querySelectorAll('.lat-sched__bar')].find((b) => {
+      const r = b.getBoundingClientRect();
+      return r.top > view.top + 60 && r.bottom < view.bottom - 60 && r.left > view.left + 20 && r.width > 60 && r.height > 30 && r.right < view.right - 100;
+    });
+    return bar.dataset.key;
+  });
+  const first = `.lat-sched__bar[data-key="${key}"]`;
+  const before = await eventRow(page, key);
   let c = await centre(page, first);
   await drag(page, c, { x: c.x + 60, y: c.y });
-  const moved = await eventRow(page, 'e1');
+  const moved = await eventRow(page, key);
   check(moved.startDate !== before.startDate && moved.resourceId === before.resourceId, `drag to move: ${before.startDate} to ${moved.startDate}`);
 
   // Resize: pull the end edge of the same bar to the right.
@@ -66,22 +78,25 @@ async function run(width, height) {
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }, first);
   await drag(page, handle, { x: handle.x + 40, y: handle.y });
-  const resized = await eventRow(page, 'e1');
+  const resized = await eventRow(page, key);
   check(resized.endDate > moved.endDate && resized.startDate === moved.startDate, `drag to resize: end ${moved.endDate} to ${resized.endDate}`);
 
   // Reassign: drop the bar on the next person's row.
   c = await centre(page, first);
+  await page.evaluate((id) => { window.__own = id; }, before.resourceId);
   const rowBelow = await page.evaluate(() => {
     const rows = [...document.querySelectorAll('.lat-sched__row')];
-    const r = rows[1].getBoundingClientRect();
-    return { y: r.top + r.height / 2, id: rows[1].dataset.resource };
+    const own = rows.findIndex((x) => x.dataset.resource === window.__own);
+    const next = rows[own + 1];
+    const r = next.getBoundingClientRect();
+    return { y: r.top + r.height / 2, id: next.dataset.resource };
   });
   await drag(page, c, { x: c.x, y: rowBelow.y });
-  const reassigned = await eventRow(page, 'e1');
+  const reassigned = await eventRow(page, key);
   check(reassigned.resourceId === rowBelow.id, `drag to another person: now ${reassigned.resourceId}`);
   check(await page.evaluate(() => !document.getElementById('undo').disabled), 'edits can be undone');
   await page.click('#undo');
-  check((await eventRow(page, 'e1')).resourceId === before.resourceId, 'undo puts the work back');
+  check((await eventRow(page, key)).resourceId === before.resourceId, 'undo puts the work back');
   await page.screenshot({ path: `shots/${width}-edited.png` });
 
   await page.evaluate(() => { const t = document.querySelector('.lat-sched__timeline'); t.scrollTop = t.scrollHeight; });
@@ -104,6 +119,8 @@ async function run(width, height) {
   const groups = await page.evaluate(() => document.querySelectorAll('.lat-sched__group').length);
   check(groups >= 3, `grouped by team: ${groups} group rows in view`);
   await page.screenshot({ path: `shots/${width}-grouped.png` });
+  const clipped = await page.evaluate(() => [...document.querySelectorAll('.lat-sched__grid [role=gridcell], .lat-sched__grid [role=row] > *')].filter((e) => e.scrollWidth > e.clientWidth + 1 && !e.title).map((e) => e.textContent.trim()).slice(0, 5));
+  check(clipped.length === 0, `no clipped names without a title ${clipped.join('|')}`);
   await page.select('#group', '');
   await sleep(400);
 

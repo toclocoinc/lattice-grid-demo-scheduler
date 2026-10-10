@@ -1,6 +1,6 @@
-import { resources, events, PROJECTS } from './src/data.js?v=20261010a';
+import { resources, events, PROJECTS } from './src/data.js?v=20261010b';
 
-const GRID = 'https://cdn.jsdelivr.net/npm/@toclocoinc/lattice-grid@1.98.1';
+const GRID = 'https://cdn.jsdelivr.net/npm/@toclocoinc/lattice-grid@1.98.2';
 // Public, domain-bound key for toclocoinc.github.io; on localhost no key is needed.
 const LICENCE = 'LG1.eyJ2IjoxLCJwIjoibGF0dGljZS1ncmlkIiwidCI6IlRPQ0xPQ08gSW5jIC0gcHVibGljIGRlbW9zIiwiZSI6IjIwMzAtMDEtMDEiLCJkIjpbInRvY2xvY29pbmMuZ2l0aHViLmlvIl19.9De42ua3aCGpiMB6EVRP7Tv-upUlDI-0T07rlSPzvCrsqg8t4YJi7SRnStEpAg48uzmcG7il1fR_TfwkUE7iCA';
 
@@ -10,16 +10,7 @@ setLicence(LICENCE);
 
 const $ = (id) => document.getElementById(id);
 const host = $('scheduler');
-// The plan runs ten weeks (70 days). "Fit" is the pixels-per-day that shows the whole plan, up to the
-// scale where the axis labels weeks; "Day" is a scale wide enough for a label on every day. On a
-// screen too wide for the whole plan at week labels, the page opens at the day scale instead.
-const PLAN_DAYS = 70;
-const GRID_WIDTH = 300;
-const DAY_PX = 48;
-const MAX_FIT_PX = 17;
-const roomPx = () => Math.floor((host.clientWidth - GRID_WIDTH - 6) / PLAN_DAYS);
-const fitPx = () => Math.max(6, Math.min(MAX_FIT_PX, roomPx()));
-const state = { zoom: roomPx() > MAX_FIT_PX ? DAY_PX : fitPx(), groupBy: '', search: '', workload: true };
+const state = { zoom: 'fit', groupBy: 'team', search: '', workload: true };
 let scheduler = null;
 let unsubscribe = [];
 
@@ -42,8 +33,8 @@ function refreshReadouts() {
   $('over').textContent = names.length ? `Over-allocated: ${names.join(', ')}` : state.workload ? 'Nobody is over-allocated.' : '';
 }
 
-function showZoom(px) {
-  const active = px === DAY_PX ? 'day' : px === fitPx() ? 'fit' : scheduler.getZoom().level;
+function showZoom() {
+  const active = scheduler.getZoom().level;
   document.querySelectorAll('[data-zoom]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.zoom === active)));
 }
 
@@ -57,6 +48,7 @@ function build(current) {
     fields: { resourceId: 'resourceId', startDate: 'startDate', endDate: 'endDate', name: 'name' },
     columns: [{ id: 'name', field: 'name', title: 'Person', layout: { width: 150 } }, { id: 'role', field: 'role', title: 'Role', layout: { width: 130 } }],
     zoom: state.zoom,
+    resourceWidth: 440,
     date: '2026-10-05',
     rowHeight: 56,
     workload: state.workload,
@@ -68,16 +60,16 @@ function build(current) {
   });
   unsubscribe = [
     scheduler.on('event:change', (change) => { $('status').textContent = describe(change); refreshReadouts(); }),
-    scheduler.on('zoom:change', ({ px }) => { state.zoom = px; showZoom(px); }),
+    scheduler.on('zoom:change', ({ px }) => { state.zoom = scheduler.getZoom().level; showZoom(); }),
   ];
-  showZoom(state.zoom);
+  showZoom();
   refreshReadouts();
 }
 
 build();
 globalThis.__scheduler = () => scheduler;
 
-document.querySelectorAll('[data-zoom]').forEach((b) => b.addEventListener('click', () => scheduler.setZoom({ fit: fitPx(), day: DAY_PX }[b.dataset.zoom] || b.dataset.zoom)));
+document.querySelectorAll('[data-zoom]').forEach((b) => b.addEventListener('click', () => scheduler.setZoom(b.dataset.zoom)));
 $('group').addEventListener('change', (e) => { state.groupBy = e.target.value; scheduler.setGroupBy(state.groupBy || null); });
 $('search').addEventListener('input', (e) => { state.search = e.target.value; scheduler.setSearch(state.search); });
 $('undo').addEventListener('click', () => { scheduler.undo(); refreshReadouts(); });
