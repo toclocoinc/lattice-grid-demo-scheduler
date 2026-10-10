@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resource Scheduler for a Team Plan | Lattice Grid</title>
+<meta name="description" content="A resource scheduler for 25 people in five teams over ten weeks: drag work to move, resize or reassign it, see who is over-allocated, group by team, search and zoom.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@toclocoinc/lattice-grid@1.98.1/lattice-grid.min.css">
+<link rel="stylesheet" href="styles.css?v=20261010a">
+<!-- The grid comes from the published package. To use a newer release, change the version in main.js. -->
+</head>
+<body>
+<header>
+  <h1>Resource scheduler for a team plan</h1>
+  <p class="lede">Twenty-five people in five teams, ten weeks of work. Drag a bar to move it, pull an edge to resize it, or drop it on another person to reassign it. The strip under each row shows how booked that person is, and over-allocated weeks are flagged.</p>
+  <p class="links"><a href="https://github.com/toclocoinc/lattice-grid-demo-scheduler">Code on GitHub</a>
+  <a href="https://www.latticegrid.dev/scheduler/">Lattice Grid scheduler</a></p>
+</header>
+<main class="demo">
+  <div class="toolbar" role="toolbar" aria-label="Scheduler controls">
+    <div class="group" role="group" aria-label="Zoom">
+      <button type="button" data-zoom="fit" aria-pressed="false">Fit</button>
+      <button type="button" data-zoom="day" aria-pressed="false">Day</button>
+      <button type="button" data-zoom="week" aria-pressed="false">Week</button>
+      <button type="button" data-zoom="month" aria-pressed="false">Month</button>
+    </div>
+    <label>Group by <select id="group"><option value="" selected>None</option><option value="team">Team</option></select></label>
+    <label>Search <input id="search" type="search" placeholder="Person, role or task" autocomplete="off"></label>
+    <label class="check"><input id="workload" type="checkbox" checked> Show workload</label>
+    <div class="group" role="group" aria-label="History">
+      <button type="button" id="undo" disabled>Undo</button>
+      <button type="button" id="redo" disabled>Redo</button>
+    </div>
+    <span id="status" class="status" aria-live="polite">Drag any bar to try it.</span>
+  </div>
+  <div id="over" class="over" aria-live="polite"></div>
+  <div id="scheduler" class="scheduler"></div>
+</main>
+<footer>Built with <a href="https://www.latticegrid.dev/scheduler/">Lattice Grid</a>. No keys, no analytics.</footer>
+<script type="module" src="main.js?v=20261010a"></script>
+</body>
+</html>

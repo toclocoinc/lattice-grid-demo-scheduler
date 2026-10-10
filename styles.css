@@ -1,0 +1,25 @@
+html, body { height: 100%; }
+body { margin: 0; display: flex; flex-direction: column; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #fff; color: #14171a; }
+header { padding: 12px 18px 8px; border-bottom: 1px solid #dfe3e6; flex: none; }
+h1 { font-size: 1.25rem; margin: 0 0 4px; }
+.lede { margin: 0 0 8px; color: #5b6570; max-width: 110ch; }
+.links { display: flex; gap: 18px; margin: 0 0 4px; font-weight: 600; }
+.links a { color: #1f6feb; }
+.demo { flex: 1; min-height: 360px; display: flex; flex-direction: column; padding: 10px 18px 0; min-width: 0; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 6px; }
+.toolbar label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.group { display: inline-flex; }
+.group button { border-radius: 0; margin-left: -1px; }
+.group button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+.group button:last-child { border-radius: 0 6px 6px 0; }
+.group button:only-child { border-radius: 6px; }
+button, select, input[type="search"] { font: inherit; font-size: 13px; padding: 4px 10px; border: 1px solid #c4ccd2; border-radius: 6px; background: #fff; }
+button { cursor: pointer; }
+button:disabled { cursor: default; color: #9aa4ad; }
+button[aria-pressed="true"] { background: #2d6bff; color: #fff; border-color: #2d6bff; }
+input[type="search"] { width: 190px; }
+.status { color: #5b6570; font-size: 13px; margin-left: auto; }
+.over { font-size: 13px; color: #b42318; min-height: 1.45em; margin-bottom: 4px; }
+.scheduler { flex: 1; min-height: 0; border: 1px solid #dfe3e6; border-radius: 6px; overflow: hidden; }
+footer { flex: none; font-size: 12px; color: #5b6570; padding: 6px 18px 8px; }
+footer a { color: #1f6feb; }
