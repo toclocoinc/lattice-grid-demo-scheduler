@@ -105,18 +105,25 @@ async function run(width, height) {
   await page.evaluate(() => { document.querySelector('.lat-sched__timeline').scrollTop = 0; });
 
   // Zoom.
+  const pxs = {};
   for (const level of ['day', 'week', 'month', 'fit']) {
     await page.click(`[data-zoom="${level}"]`);
     await sleep(400);
     const px = await page.evaluate(() => globalThis.__scheduler().getZoom().px);
+    pxs[level] = px;
     check(await page.evaluate((l) => document.querySelector(`[data-zoom="${l}"]`).getAttribute('aria-pressed') === 'true', level), `zoom ${level} (${px}px a day)`);
     await page.screenshot({ path: `shots/${width}-zoom-${level}.png` });
   }
+
+  check(pxs.day > pxs.week && pxs.week > pxs.month && pxs.day > pxs.fit, `day is wider than fit (${pxs.day}px vs ${pxs.fit}px a day)`);
 
   // Group by team.
   await page.select('#group', 'team');
   await sleep(600);
   const groups = await page.evaluate(() => document.querySelectorAll('.lat-sched__group').length);
+  const names = await page.evaluate(() => [...document.querySelectorAll('.lat-sched__group')].map((g) => g.dataset.group));
+  const shown = await page.evaluate((list) => list.map((n) => [...document.querySelectorAll('.lat-sched__grid *')].filter((e) => e.children.length === 0 && e.textContent.trim() === n).length), names);
+  check(names.length > 0 && shown.every((n) => n === 1), `each team name appears once: ${names.join(', ')}`);
   check(groups >= 3, `grouped by team: ${groups} group rows in view`);
   await page.screenshot({ path: `shots/${width}-grouped.png` });
   const clipped = await page.evaluate(() => [...document.querySelectorAll('.lat-sched__grid [role=gridcell], .lat-sched__grid [role=row] > *')].filter((e) => e.scrollWidth > e.clientWidth + 1 && !e.title).map((e) => e.textContent.trim()).slice(0, 5));
