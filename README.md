@@ -20,7 +20,7 @@ npm run serve        # http://localhost:8000/
 npm run verify       # headless Chrome check of the steps at two screen sizes (needs Chrome)
 ```
 
-The grid and the scheduler load from the published `@toclocoinc/lattice-grid` package on jsDelivr; change the version in `index.html` and `main.js` to move to a newer release. On `localhost` no licence key is needed; the key in `main.js` is the public one for `toclocoinc.github.io`.
+The grid and the scheduler load from the published `@toclocoinc/lattice-grid` package on jsDelivr; change `GRID` in `main.js` (the one place the version is set) to move to a newer release. On `localhost` no licence key is needed; the key in `main.js` is the public one for `toclocoinc.github.io`.
 
 `npm run verify` loads the page at 1440x900 and 1920x1080, drags to move, resize and reassign, checks zoom, grouping, search and the workload strip, fails on any console error or warning, and writes screenshots to `shots/`. Set `CHROME` to the path of your Chrome if it is not in the usual place.
 
