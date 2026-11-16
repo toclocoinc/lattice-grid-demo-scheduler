@@ -1,16 +1,24 @@
 import { resources, events, PROJECTS } from './src/data.js?v=20261012a';
 
-const GRID = 'https://cdn.latticegrid.dev/lattice-grid@1.111.5';
+const GRID = 'https://cdn.latticegrid.dev/lattice-grid@1.123.3'; // the one place the grid version is set
+const STAMP = '20261116b';
 // Public, domain-bound key for toclocoinc.github.io; on localhost no key is needed.
 const LICENCE = 'LG1.eyJ2IjoxLCJwIjoibGF0dGljZS1ncmlkIiwidCI6IlRPQ0xPQ08gSW5jIC0gcHVibGljIGRlbW9zIiwiZSI6IjIwMzAtMDEtMDEiLCJkIjpbInRvY2xvY29pbmMuZ2l0aHViLmlvIl19.9De42ua3aCGpiMB6EVRP7Tv-upUlDI-0T07rlSPzvCrsqg8t4YJi7SRnStEpAg48uzmcG7il1fR_TfwkUE7iCA';
 
-const { createGrid, setLicence } = await import(GRID + '/lattice-grid.esm.min.js');
-const { createScheduler } = await import(GRID + '/modules/scheduler.esm.min.js');
+const sheet = document.createElement('link');
+sheet.rel = 'stylesheet';
+sheet.href = `${GRID}/lattice-grid.min.css?v=${STAMP}`;
+const sheetLoaded = new Promise((done) => { sheet.onload = done; sheet.onerror = done; });
+document.head.insertBefore(sheet, document.head.querySelector('link[href^="styles.css"]'));
+await sheetLoaded;
+const { createGrid, setLicence } = await import(`${GRID}/lattice-grid.esm.min.js?v=${STAMP}`);
+const { createScheduler } = await import(`${GRID}/modules/scheduler.esm.min.js?v=${STAMP}`);
 setLicence(LICENCE);
 
 const $ = (id) => document.getElementById(id);
 const host = $('scheduler');
-const state = { zoom: 'fit', groupBy: 'team', search: '', workload: true };
+const phone = matchMedia('(max-width: 600px)').matches;
+const state = { zoom: phone ? 'week' : 'fit', groupBy: 'team', search: '', workload: true };
 let scheduler = null;
 let unsubscribe = [];
 
@@ -46,9 +54,11 @@ function build(current) {
     resources,
     events: current || events,
     fields: { resourceId: 'resourceId', startDate: 'startDate', endDate: 'endDate', name: 'name' },
-    columns: [{ id: 'name', field: 'name', title: 'Person', layout: { width: 150 } }, { id: 'role', field: 'role', title: 'Role', layout: { width: 130 } }],
+    columns: phone
+      ? [{ id: 'name', field: 'name', title: 'Person', layout: { width: 120 } }]
+      : [{ id: 'name', field: 'name', title: 'Person', layout: { width: 150 } }, { id: 'role', field: 'role', title: 'Role', layout: { width: 130 } }],
     zoom: state.zoom,
-    resourceWidth: 440,
+    resourceWidth: phone ? 120 : 440,
     date: '2026-10-05',
     rowHeight: 56,
     workload: state.workload,
